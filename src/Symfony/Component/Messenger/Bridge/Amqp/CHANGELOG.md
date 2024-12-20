@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.3
+---
+
+* Add option `delay[flags]` in the transport definition
+
 7.1
 ---
 

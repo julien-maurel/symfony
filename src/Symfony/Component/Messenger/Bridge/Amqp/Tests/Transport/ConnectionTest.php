@@ -483,10 +483,12 @@ class ConnectionTest extends TestCase
         $amqpExchange->expects($this->once())->method('declareExchange');
         $amqpQueue->expects($this->once())->method('setName')->with(self::DEFAULT_EXCHANGE_NAME);
         $amqpQueue->expects($this->once())->method('declareQueue');
+        $amqpQueue->expects($this->once())->method('setFlags')->with(\AMQP_DURABLE);
 
         $delayExchange->expects($this->once())->method('setName')->with('delays');
         $delayExchange->expects($this->once())->method('declareExchange');
         $delayExchange->expects($this->once())->method('publish');
+        $delayExchange->expects($this->once())->method('setFlags')->with(\AMQP_DURABLE);
 
         $connection = Connection::fromDsn('amqp://localhost', [], $factory);
         $connection->publish('{}', ['x-some-headers' => 'foo'], 5000);

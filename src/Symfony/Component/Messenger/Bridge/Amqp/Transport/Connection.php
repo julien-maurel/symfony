@@ -108,6 +108,7 @@ class Connection
             'delay' => [
                 'exchange_name' => 'delays',
                 'queue_name_pattern' => 'delay_%exchange_name%_%routing_key%_%delay%',
+                'flags' => \AMQP_DURABLE
             ],
         ], $connectionOptions);
         $this->autoSetupExchange = $this->autoSetupDelayExchange = $connectionOptions['auto_setup'] ?? true;
@@ -142,6 +143,7 @@ class Connection
      *   * delay:
      *     * queue_name_pattern: Pattern to use to create the queues (Default: "delay_%exchange_name%_%routing_key%_%delay%")
      *     * exchange_name: Name of the exchange to be used for the delayed/retried messages (Default: "delays")
+     *     * flags: Delay exchange and delayed queues flags (Default: AMQP_DURABLE)
      *     * arguments: array of extra delay queue arguments (for example:  ['x-queue-type' => 'classic', 'x-message-deduplication' => true,])
      *   * auto_setup: Enable or not the auto-setup of queues and exchanges (Default: true)
      *
@@ -369,7 +371,7 @@ class Connection
             $this->amqpDelayExchange = $this->amqpFactory->createExchange($this->channel());
             $this->amqpDelayExchange->setName($this->connectionOptions['delay']['exchange_name']);
             $this->amqpDelayExchange->setType(\AMQP_EX_TYPE_DIRECT);
-            $this->amqpDelayExchange->setFlags(\AMQP_DURABLE);
+            $this->amqpDelayExchange->setFlags($this->connectionOptions['delay']['flags']);
         }
 
         return $this->amqpDelayExchange;
@@ -388,7 +390,7 @@ class Connection
     {
         $queue = $this->amqpFactory->createQueue($this->channel());
         $queue->setName($this->getRoutingKeyForDelay($delay, $routingKey, $isRetryAttempt));
-        $queue->setFlags(\AMQP_DURABLE);
+        $queue->setFlags($this->connectionOptions['delay']['flags']);
         $queue->setArguments(array_merge([
             'x-message-ttl' => $delay,
             // delete the delay queue 10 seconds after the message expires
